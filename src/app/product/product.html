@@ -1,0 +1,175 @@
+<div class="wrapper">
+  <div class="header-row">
+    <h1>Products</h1>
+    <button type="button" class="primary-btn" (click)="openForm()">Add Product</button>
+  </div>
+
+  <div class="table-card">
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th>Product Name <span class="sort-icon">▲▼</span></th>
+          <th>Product Code <span class="sort-icon">▲▼</span></th>
+          <th>Description <span class="sort-icon">▲▼</span></th>
+          <th>Category <span class="sort-icon">▲▼</span></th>
+          <th>Price <span class="sort-icon">▲▼</span></th>
+          <th>Quantity <span class="sort-icon">▲▼</span></th>
+          <th>Image</th>
+          <th>Active <span class="sort-icon">▲▼</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of pagedProducts">
+          <td>{{ product.productName }}</td>
+          <td>{{ product.productCode }}</td>
+          <td>{{ product.description }}</td>
+          <td>{{ product.category }}</td>
+          <td>{{ product.price | currency }}</td>
+          <td>{{ product.quantity }}</td>
+          <td>
+            <img
+              [src]="product.imageUrl"
+              alt="Product Image"
+              class="product-image"
+            />
+          </td>
+          <td>
+            <span class="status" [class.active]="product.isActive" [class.inactive]="!product.isActive">
+              {{ product.isActive ? 'Yes' : 'No' }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="table-footer">
+      <div class="table-summary">
+        Showing {{ pageStart }}-{{ pageEnd }} of {{ products.length }}
+      </div>
+      <div class="pagination">
+        <button type="button" class="page-btn" (click)="prevPage()" [disabled]="pageIndex === 0">«</button>
+        <button type="button" class="page-btn" [class.active-page]="pageIndex === 0" disabled>1</button>
+        <button type="button" class="page-btn" [disabled]="pageIndex >= totalPages - 1">»</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="showForm" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Add Product</h2>
+        <button type="button" class="close-btn" (click)="closeForm()">✕</button>
+      </div>
+
+      <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="productName">Product Name</label>
+            <input
+              id="productName"
+              type="text"
+              formControlName="productName"
+              [class.invalid-input]="f['productName'].invalid && f['productName'].touched"
+              aria-invalid="{{ f['productName'].invalid && f['productName'].touched }}"
+            />
+            <div *ngIf="f['productName'].invalid && f['productName'].touched" class="error-text">
+              Product name is required.
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="productCode">Product Code</label>
+            <input
+              id="productCode"
+              type="text"
+              formControlName="productCode"
+              [class.invalid-input]="f['productCode'].invalid && f['productCode'].touched"
+            />
+            <div *ngIf="f['productCode'].invalid && f['productCode'].touched" class="error-text">
+              Product code is required.
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="description">Description</label>
+            <textarea
+              id="description"
+              rows="3"
+              formControlName="description"
+              [class.invalid-input]="f['description'].invalid && f['description'].touched"
+            ></textarea>
+            <div *ngIf="f['description'].invalid && f['description'].touched" class="error-text">
+              Description is required.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="category">Category</label>
+            <input
+              id="category"
+              type="text"
+              formControlName="category"
+              [class.invalid-input]="f['category'].invalid && f['category'].touched"
+            />
+            <div *ngIf="f['category'].invalid && f['category'].touched" class="error-text">
+              Category is required.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="price">Price</label>
+            <input
+              id="price"
+              type="number"
+              formControlName="price"
+              [class.invalid-input]="f['price'].invalid && f['price'].touched"
+            />
+            <div *ngIf="f['price'].invalid && f['price'].touched" class="error-text">
+              <span *ngIf="f['price'].errors?.['required']">Price is required.</span>
+              <span *ngIf="!f['price'].errors?.['required'] && f['price'].errors?.['min']">Price must be 0 or higher.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="quantity">Quantity</label>
+            <input
+              id="quantity"
+              type="number"
+              formControlName="quantity"
+              [class.invalid-input]="f['quantity'].invalid && f['quantity'].touched"
+            />
+            <div *ngIf="f['quantity'].invalid && f['quantity'].touched" class="error-text">
+              <span *ngIf="f['quantity'].errors?.['required']">Quantity is required.</span>
+              <span *ngIf="!f['quantity'].errors?.['required'] && f['quantity'].errors?.['min']">Quantity must be 0 or higher.</span>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="imageUrl">Image URL</label>
+            <input
+              id="imageUrl"
+              type="url"
+              formControlName="imageUrl"
+              [class.invalid-input]="f['imageUrl'].invalid && f['imageUrl'].touched"
+            />
+            <div *ngIf="f['imageUrl'].invalid && f['imageUrl'].touched" class="error-text">
+              Please enter a valid image URL.
+            </div>
+          </div>
+
+          <div class="form-group full-width checkbox-group">
+            <label>
+              <input type="checkbox" formControlName="isActive" />
+              Is Active
+            </label>
+          </div>
+        </div>
+
+        <div class="popup-actions">
+          <button type="button" class="secondary-btn" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="primary-btn" [disabled]="!productForm.valid">Add Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
