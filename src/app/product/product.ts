@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 import { Product as ProductModel } from './product.model';
+import { ProductService } from '../services/product.service';
 
 @Component({
   selector: 'app-product',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, HttpClientModule],
   templateUrl: './product.html',
   styleUrl: './product.css',
 })
@@ -28,7 +30,13 @@ export class ProductComponent {
   pageSize = 10;
   pageIndex = 0;
 
-  constructor(private fb: FormBuilder) {
+  isSubmitting = false;
+  submitError: string | null = null;
+
+  constructor(
+    private fb: FormBuilder,
+    private productService: ProductService
+  ) {
     this.productForm = this.fb.group({
       productName: ['', Validators.required],
       productCode: ['', Validators.required],
@@ -88,12 +96,26 @@ export class ProductComponent {
   }
 
   onSubmit() {
-    if (this.productForm.valid) {
-      const newProduct: ProductModel = this.productForm.value;
-      this.products.push(newProduct);
-      this.closeForm();
-    } else {
+    if (!this.productForm.valid) {
       this.productForm.markAllAsTouched();
+      return;
     }
+
+    this.isSubmitting = true;
+    this.submitError = null;
+    const newProduct: ProductModel = this.productForm.value;
+
+    this.productService.createProduct(newProduct).subscribe({
+      next: (createdProduct) => {
+        this.products.push(createdProduct);
+        this.closeForm();
+        this.isSubmitting = false;
+      },
+      error: (err) => {
+        console.error('CreateProduct failed', err);
+        this.submitError = 'Could not save product. Please try again.';
+        this.isSubmitting = false;
+      }
+    });
   }
 }
